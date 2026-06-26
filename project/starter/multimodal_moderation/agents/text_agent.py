@@ -1,7 +1,9 @@
 from pydantic_ai import Agent
 from multimodal_moderation.types.model_choice import ModelChoice
 from multimodal_moderation.types.moderation_result import ModerationResult, TextModerationResult
+from dotenv import load_dotenv
 
+load_dotenv()
 
 MODERATION_INSTRUCTIONS = """
 <context>
@@ -34,7 +36,7 @@ Provide a detailed rationale for your choices as well as a confidence score betw
 #   - instructions=MODERATION_INSTRUCTIONS
 #   - output_type=TextModerationResult
 # Hint: Agent is already imported from pydantic_ai
-text_moderation_agent = None  # Replace with your Agent
+text_moderation_agent = Agent('google-gla:gemini-2.5-flash-lite', instructions=MODERATION_INSTRUCTIONS, output_type=TextModerationResult)  # Replace with your Agent
 
 
 async def moderate_text(model_choice: ModelChoice, text: str) -> TextModerationResult:
@@ -49,4 +51,9 @@ async def moderate_text(model_choice: ModelChoice, text: str) -> TextModerationR
     #           result = agent.run_sync([parameters])
     #       like we did in the class.
     # Make sure to pass: model=model_choice.model and model_settings=model_choice.model_settings
-    raise NotImplementedError("TODO: Implement text moderation")
+    result = await text_moderation_agent.run(
+        text,
+        model=model_choice.model,
+        model_settings=model_choice.model_settings
+    )
+    return result.output
